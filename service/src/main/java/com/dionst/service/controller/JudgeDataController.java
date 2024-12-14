@@ -1,8 +1,13 @@
 package com.dionst.service.controller;
 
 
+import com.dionst.service.annotation.AuthCheck;
+import com.dionst.service.common.Result;
+import com.dionst.service.constant.UserConstant;
+import com.dionst.service.model.dto.judgeData.JudgeDataAddRequest;
 import com.dionst.service.model.entity.JudgeData;
 import com.dionst.service.service.IJudgeDataService;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,13 +26,14 @@ public class JudgeDataController {
     @Autowired
     private IJudgeDataService judgeDataService;
 
-    @PostMapping
-    public String Add(@RequestBody JudgeData judgeData) {
-        judgeDataService.save(judgeData);
-        return "success";
+    @PostMapping("/add")
+    @ApiOperation("添加判题数据")
+    @AuthCheck(mustRole = UserConstant.ADMIN)
+    public Result<String> add(@RequestBody JudgeDataAddRequest judgeDataAddRequest) {
+        judgeDataService.add(judgeDataAddRequest);
+        return Result.ok();
     }
 
-    @DeleteMapping
     private boolean Delete(Long id) {
         boolean b = judgeDataService.removeById(id);
         return b;

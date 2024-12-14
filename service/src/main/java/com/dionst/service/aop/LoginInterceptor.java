@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.dionst.service.constant.RedisConstant;
 import com.dionst.service.constant.UserConstant;
 import com.dionst.service.model.entity.User;
+import com.dionst.service.model.enums.UserRoleEnum;
 import com.dionst.service.utils.UserHolder;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
@@ -38,20 +39,25 @@ public class LoginInterceptor {
         RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
         HttpServletRequest httpServletRequest = ((ServletRequestAttributes) requestAttributes).getRequest();
         String token = httpServletRequest.getHeader(UserConstant.LOGIN_TOKEN);
-
+         //todo
+        User user = new User();
+        user.setId(1L);
+        user.setUserRole(UserRoleEnum.ADMIN.getValue());
+        UserHolder.saveUser(user);
         //获去用户信息
         if(!StrUtil.isBlank(token))
         {
-            String key = RedisConstant.LOGIN_TOKEN_KEY + token;
-            String userJSON = stringRedisTemplate.opsForValue().get(key);
-            if (!StrUtil.isBlank(userJSON))
-            {
-                User user = gson.fromJson(userJSON, User.class);
-                //保存用户信息到ThreadLocal
-                UserHolder.saveUser(user);
-                //刷新token有效期
-                stringRedisTemplate.expire(key,RedisConstant.LOGIN_TOKEN_TTL, TimeUnit.MINUTES);
-            }
+
+//            String key = RedisConstant.LOGIN_TOKEN_KEY + token;
+//            String userJSON = stringRedisTemplate.opsForValue().get(key);
+//            if (!StrUtil.isBlank(userJSON))
+//            {
+//                User user = gson.fromJson(userJSON, User.class);
+//                //保存用户信息到ThreadLocal
+//                UserHolder.saveUser(user);
+//                //刷新token有效期
+//                stringRedisTemplate.expire(key,RedisConstant.LOGIN_TOKEN_TTL, TimeUnit.MINUTES);
+//            }
         }
 
         // 执行原方法

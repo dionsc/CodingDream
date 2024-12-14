@@ -13,4 +13,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IJudgeRequestService extends IService<JudgeRequest> {
 
+    void sendJudgeRequest(Long submissionId) ;
+
 }

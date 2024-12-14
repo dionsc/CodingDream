@@ -31,9 +31,9 @@ public class Submission implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
-    @ApiModelProperty(value = "参赛者队伍编号")
-    @TableField("participant_id")
-    private Long participantId;
+    @ApiModelProperty(value = "用户编号")
+    @TableField("user_id")
+    private Long userId;
 
     @ApiModelProperty(value = "参加的比赛的编号")
     @TableField("contest_id")
@@ -49,7 +49,7 @@ public class Submission implements Serializable {
 
     @ApiModelProperty(value = "系统判定结果")
     @TableField("verdict")
-    private String verdict;
+    private int verdict;
 
     @ApiModelProperty(value = "代码提交时间")
     @TableField("submit_time")

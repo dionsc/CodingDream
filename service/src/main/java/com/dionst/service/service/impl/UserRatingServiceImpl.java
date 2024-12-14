@@ -17,4 +17,5 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserRatingServiceImpl extends ServiceImpl<UserRatingMapper, UserRating> implements IUserRatingService {
 
+
 }

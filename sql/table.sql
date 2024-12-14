@@ -61,12 +61,12 @@ create table if not exists program
 create table if not exists submission
 (
     id             bigint auto_increment comment 'id' primary key,
-    participant_id bigint                             not null comment '参赛者队伍编号',
+    user_id        bigint                             not null comment '用户编号',
     contest_id     bigint                             not null comment '参加的比赛的编号',
     question_index bigint                             not null comment '题目在本场比赛的编号(用户自己设置)',
 
     code_id        bigint                             not null comment '提交的代码',
-    verdict        text                               not null comment '系统判定结果',
+    verdict        int                                not null comment '系统判定结果',
     submit_time    datetime                           not null comment '代码提交时间',
 
     create_time    datetime default CURRENT_TIMESTAMP not null comment '创建时间',

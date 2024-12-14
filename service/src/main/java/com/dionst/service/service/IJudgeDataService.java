@@ -1,5 +1,6 @@
 package com.dionst.service.service;
 
+import com.dionst.service.model.dto.judgeData.JudgeDataAddRequest;
 import com.dionst.service.model.entity.JudgeData;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +14,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IJudgeDataService extends IService<JudgeData> {
 
+    /**
+     * 添加判题数据
+     * @param judgeDataAddRequest
+     */
+    void add(JudgeDataAddRequest judgeDataAddRequest);
 }
