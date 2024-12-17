@@ -33,9 +33,4 @@ public class JudgeDataController {
         judgeDataService.add(judgeDataAddRequest);
         return Result.ok();
     }
-
-    private boolean Delete(Long id) {
-        boolean b = judgeDataService.removeById(id);
-        return b;
-    }
 }

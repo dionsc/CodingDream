@@ -5,6 +5,8 @@ import com.dionst.service.common.ErrorCode;
 import com.dionst.service.constant.ContestConstant;
 import com.dionst.service.constant.QuestionConstant;
 import com.dionst.service.exception.BusinessException;
+import com.dionst.service.mapper.ContestMapper;
+import com.dionst.service.mapper.ProgramMapper;
 import com.dionst.service.model.dto.program.ProgramAddRequest;
 import com.dionst.service.model.dto.question.QuestionAddRequest;
 import com.dionst.service.model.entity.Contest;
@@ -41,10 +43,10 @@ import java.util.List;
 public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> implements IQuestionService {
 
     @Autowired
-    private IContestService contestService;
+    private ContestMapper contestMapper;
 
     @Autowired
-    private IProgramService programService;
+    private ProgramMapper programMapper;
 
     @Override
     @Transactional
@@ -61,7 +63,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         String code = judgeProgram.getCode();
 
         //查看比赛是否存在
-        Contest contest = contestService.getById(contestId);
+        Contest contest = contestMapper.selectById(contestId);
         if (contest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -86,7 +88,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         //保存代码
         Program program = new Program();
         BeanUtils.copyProperties(judgeProgram, program);
-        programService.save(program);
+        programMapper.insert(program);
         //保存题目
         Question question = new Question();
         question.setJudgeProgramId(program.getId());
@@ -144,7 +146,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         contestQueryWrapper.lambda()
                 .select(Contest::getStartTime)
                 .eq(Contest::getId, contestId);
-        Contest contest = contestService.getOne(contestQueryWrapper);
+        Contest contest = contestMapper.selectOne(contestQueryWrapper);
         //检查比赛是否存在
         if (contest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);

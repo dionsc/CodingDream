@@ -44,7 +44,9 @@ public enum ErrorCode {
     CONTEST_FINISH
             (50012, "比赛已经结束"),
     NO_PARTICIPATION
-            (50013, "未参赛");
+            (50013, "未参赛"),
+    NO_LANGUAGE
+            (50014,"没有次编程语言" );
 
     /**
      * 状态码

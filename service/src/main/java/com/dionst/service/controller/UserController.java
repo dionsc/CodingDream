@@ -33,7 +33,7 @@ public class UserController {
     }
 
     @ApiOperation("发送登录验证码")
-    @PutMapping("/code/{phone}")
+    @PostMapping("/code/{phone}")
     public Result<String> sendCode(@PathVariable String phone) {
         log.info("请求验证码，手机号：{}", phone);
         userService.sendCode(phone);

@@ -140,9 +140,21 @@ create table if not exists user_rating
     user_id       bigint                             not null comment '用户编号',
     contest_id    bigint                             not null comment '比赛编号',
     rating_change int                                not null comment '在本场比赛获得的积分',
-
     create_time   datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     update_time   datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     is_delete     tinyint  default 0                 not null comment '是否删除'
 ) comment '用户rating积分' collate = utf8mb4_unicode_ci;
+
+
+create table if not exists contest_rating_update
+(
+    id          bigint auto_increment comment 'id' primary key,
+    contest_id  bigint                             not null comment '比赛编号',
+    updated     boolean  default false             not null comment '是否更新',
+    finish_time datetime                           not null comment '比赛结束时间',
+    create_time datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    update_time datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    is_delete   tinyint  default 0                 not null comment '是否删除'
+) comment 'rating更新确认' collate = utf8mb4_unicode_ci;
+
 

@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dionst.service.common.ErrorCode;
 import com.dionst.service.constant.ContestConstant;
 import com.dionst.service.exception.BusinessException;
+import com.dionst.service.mapper.ContestMapper;
+import com.dionst.service.mapper.QuestionMapper;
 import com.dionst.service.model.dto.judgeData.JudgeDataAddRequest;
 import com.dionst.service.model.entity.Contest;
 import com.dionst.service.model.entity.JudgeData;
@@ -34,16 +36,16 @@ import java.util.UUID;
 public class JudgeDataServiceImpl extends ServiceImpl<JudgeDataMapper, JudgeData> implements IJudgeDataService {
 
     @Autowired
-    private IQuestionService questionService;
+    private QuestionMapper questionMapper;
 
     @Autowired
-    private IContestService contestService;
+    private ContestMapper contestMapper;
 
     @Override
     public void add(JudgeDataAddRequest judgeDataAddRequest) {
         String name = judgeDataAddRequest.getName();
         Long questionId = judgeDataAddRequest.getQuestionId();
-        String data = judgeDataAddRequest.getData();
+
 
         //检查对应题目是否存在
         QueryWrapper<Question> questionQueryWrapper = new QueryWrapper<>();
@@ -51,8 +53,8 @@ public class JudgeDataServiceImpl extends ServiceImpl<JudgeDataMapper, JudgeData
                 .select(
                         Question::getContestId,
                         Question::getCreateId)
-                .eq(Question::getId,questionId);
-        Question question = questionService.getOne(questionQueryWrapper);
+                .eq(Question::getId, questionId);
+        Question question = questionMapper.selectOne(questionQueryWrapper);
         if (question == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -65,8 +67,8 @@ public class JudgeDataServiceImpl extends ServiceImpl<JudgeDataMapper, JudgeData
         QueryWrapper<Contest> contestQueryWrapper = new QueryWrapper<>();
         contestQueryWrapper.lambda()
                 .select(Contest::getStartTime)
-                .eq(Contest::getId,question.getContestId());
-        Contest contest = contestService.getOne(contestQueryWrapper);
+                .eq(Contest::getId, question.getContestId());
+        Contest contest = contestMapper.selectOne(contestQueryWrapper);
         if (contest.getStartTime().isBefore(LocalDateTime.now().plusHours(ContestConstant.UPDATE_BEFORE_START)))
             throw new BusinessException(ErrorCode.UPDATE_CLOSE_TO_START_TIME);
 
@@ -75,10 +77,11 @@ public class JudgeDataServiceImpl extends ServiceImpl<JudgeDataMapper, JudgeData
             name = UUID.randomUUID().toString().replace("-", "").substring(0, 6);
 
         //保存
-        JudgeData judgeData = new JudgeData();;
+        JudgeData judgeData = new JudgeData();
         judgeData.setName(name);
         judgeData.setQuestionId(questionId);
-        judgeData.setData(data);
+        judgeData.setInput(judgeDataAddRequest.getInput());
+        judgeData.setOutput(judgeDataAddRequest.getOutput());
         save(judgeData);
     }
 }

@@ -2,8 +2,8 @@ package com.dionst.service.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 
-import java.time.LocalDateTime;
 import java.io.Serializable;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -22,7 +22,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("judge_data")
-@ApiModel(value="JudgeData对象", description="判题数据")
+@ApiModel(value = "JudgeData对象", description = "判题数据")
 public class JudgeData implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -39,9 +39,13 @@ public class JudgeData implements Serializable {
     @TableField("question_id")
     private Long questionId;
 
-    @ApiModelProperty(value = "数据部分")
-    @TableField("data")
-    private String data;
+    @ApiModelProperty(value = "输入数据")
+    @TableField("input")
+    private String input;
+
+    @ApiModelProperty(value = "输出数据")
+    @TableField("output")
+    private String output;
 
     @ApiModelProperty(value = "是否删除")
     @TableField("is_delete")

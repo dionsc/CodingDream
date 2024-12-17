@@ -15,6 +15,9 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Set;
+
 /**
  * <p>
  * 比赛 前端控制器
@@ -52,5 +55,12 @@ public class ContestController {
     public Result<String> participate(@PathVariable Long contestId) {
         contestService.participate(contestId);
         return Result.ok();
+    }
+
+    @ApiOperation("获取比赛榜单")
+    @PostMapping("/ranking/{contestId}")
+    public Result<List<String>> getRanking(@PathVariable Long contestId) {
+        List<String> result = contestService.getRanking(contestId);
+        return Result.ok(result);
     }
 }

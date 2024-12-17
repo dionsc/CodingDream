@@ -6,6 +6,8 @@ import com.dionst.service.model.dto.contest.ContestPageRequest;
 import com.dionst.service.model.entity.Contest;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
  * 比赛 服务类
@@ -36,4 +38,19 @@ public interface IContestService extends IService<Contest> {
      * @param contestId
      */
     void participate(Long contestId);
+
+    /**
+     * 获取榜单
+     *
+     * @param contestId
+     * @return
+     */
+    List<String> getRanking(Long contestId);
+
+    /**
+     * 更新榜单
+     * @param contestId
+     * @param userId
+     */
+    void updateRanking(Long contestId, Long userId);
 }

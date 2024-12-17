@@ -13,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IUpdateRankingRequestService extends IService<UpdateRankingRequest> {
 
+    void sendUpdateRankingRequest(Long contestId, Long userId);
 }

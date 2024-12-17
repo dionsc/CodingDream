@@ -3,9 +3,13 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/judge-sandbox/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/judge-sandbox/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/judge/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/judge/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/service/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/test/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/test/src/main/resources" charset="UTF-8" />
   </component>
 </project>

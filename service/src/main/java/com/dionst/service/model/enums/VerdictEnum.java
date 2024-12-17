@@ -11,17 +11,30 @@ import java.util.stream.Collectors;
 @Getter
 public enum VerdictEnum {
 
-    Accepted(0, "accepted"),
-    OutOfMemoryError(1, "OutOfMemoryError"),
-    StackOverflowError(2, "StackOverflowError"),
-    OutOfTimeError(3, "OutOfTimeError"),
-    SegmentError(4, "SegmentError"),
-    RunError(5, "运行错误"),
-    WrongAnswer(6, "答案错误"),
-    SystemError(7, "系统错误"),
-
-    InQueue(8, "队列中"),
-    Pending(9, "等待中"), Running(10, "判题中");
+    Accepted
+            (0, "accepted"),
+    OutOfMemoryError
+            (1, "OutOfMemoryError"),
+    StackOverflowError
+            (2, "StackOverflowError"),
+    OutOfTimeError
+            (3, "OutOfTimeError"),
+    SegmentError
+            (4, "SegmentError"),
+    RunError
+            (5, "运行错误"),
+    WrongAnswer
+            (6, "答案错误"),
+    SystemError
+            (7, "系统错误"),
+    InQueue
+            (8, "队列中"),
+    Pending
+            (9, "等待中"),
+    Running
+            (10, "判题中"),
+    CompileError
+            (11, "编译错误");
 
 
     private final int value;
@@ -54,6 +67,18 @@ public enum VerdictEnum {
         for (VerdictEnum anEnum : VerdictEnum.values()) {
             if (anEnum.text.equals(text)) {
                 return anEnum.getValue();
+            }
+        }
+        return null;
+    }
+
+    public static VerdictEnum getEnumByValue(Integer value) {
+        if (value == null) {
+            return null;
+        }
+        for (VerdictEnum anEnum : VerdictEnum.values()) {
+            if (anEnum.value == value) {
+                return anEnum;
             }
         }
         return null;

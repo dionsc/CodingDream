@@ -1,5 +1,6 @@
 package com.dionst.service.model.dto.judgeData;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -25,7 +26,10 @@ public class JudgeDataAddRequest implements Serializable {
     @ApiModelProperty(value = "数据对应题目")
     private Long questionId;
 
-    @ApiModelProperty(value = "数据部分")
-    private String data;
+    @ApiModelProperty(value = "输入数据")
+    private String input;
+
+    @ApiModelProperty(value = "输出数据")
+    private String output;
 
 }

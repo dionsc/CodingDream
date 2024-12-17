@@ -3,12 +3,12 @@ package com.dionst.service.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dionst.service.common.ErrorCode;
 import com.dionst.service.exception.BusinessException;
+import com.dionst.service.mapper.*;
 import com.dionst.service.model.dto.program.ProgramAddRequest;
 import com.dionst.service.model.dto.submission.SubmissionAddRequest;
 import com.dionst.service.model.entity.Contest;
 import com.dionst.service.model.entity.Program;
 import com.dionst.service.model.entity.Submission;
-import com.dionst.service.mapper.SubmissionMapper;
 import com.dionst.service.model.entity.UserRating;
 import com.dionst.service.model.enums.ProgramLanguageEnum;
 import com.dionst.service.model.enums.VerdictEnum;
@@ -33,13 +33,13 @@ import java.time.LocalDateTime;
 public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submission> implements ISubmissionService {
 
     @Autowired
-    private IUserRatingService userRatingService;
+    private UserRatingMapper userRatingMapper;
 
     @Autowired
-    private IProgramService programService;
+    private ProgramMapper programMapper;
 
     @Autowired
-    private IContestService contestService;
+    private ContestMapper contestMapper;
 
     @Autowired
     private IJudgeRequestService judgeRequestService;
@@ -58,7 +58,7 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
         userRatingQueryWrapper.lambda()
                 .eq(UserRating::getContestId, contestId)
                 .eq(UserRating::getUserId, UserHolder.getUser().getId());
-        long c = userRatingService.count(userRatingQueryWrapper);
+        long c = userRatingMapper.selectCount(userRatingQueryWrapper);
         //如果为参赛
         if (c == 0) {
             throw new BusinessException(ErrorCode.NO_PARTICIPATION);
@@ -70,7 +70,7 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
         }
 
         //检查比赛是否正在进行
-        Contest contest = contestService.getById(contestId);
+        Contest contest = contestMapper.selectById(contestId);
         LocalDateTime startTime = contest.getStartTime();
         Long duration = contest.getDuration();
         if (submitTime.isAfter(startTime.plusMinutes(duration))
@@ -83,7 +83,7 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
         Program program = new Program();
         program.setCode(code.getCode());
         program.setLanguage(code.getLanguage());
-        programService.save(program);
+        programMapper.insert(program);
 
         //保存提交
         Submission submission = new Submission();
