@@ -1,6 +1,5 @@
 package com.dionst.service.judge.run;
 
-import com.dionst.service.judge.compile.JavaCompiler;
 import com.dionst.service.model.enums.VerdictEnum;
 import com.dionst.service.utils.FileUtil;
 import com.github.dockerjava.api.DockerClient;
@@ -17,42 +16,28 @@ import java.util.stream.Stream;
 @Getter
 public class JavaRunner extends Runner implements RunnerStrategy {
 
-    private final JavaCompiler compiler = new JavaCompiler();
 
-    public JavaRunner() throws IOException {
-        super();
+    public JavaRunner(String code) throws IOException, InterruptedException {
+        super(code);
     }
 
     @Override
-    public VerdictEnum run(String code, Long timeLimit, Long memoryLimit, String... otherParameter) throws IOException, InterruptedException {
-        JavaCompiler compiler = this.getCompiler();
-        File systemFile = this.getSystemFile();
-        File dirFile = this.getDirFile();
-        DockerClient dockerClient = this.getDockerClient();
-        String containerId = this.getContainerId();
-
-        compiler.compile(code, dirFile.getAbsolutePath());
-        //创建沙箱中的执行命令
-        String[] cmdArray = {"java", "-cp", "/app/", "Judge",
-                String.valueOf(timeLimit),
-                String.valueOf(memoryLimit)};
-
-        String[] cmd = Stream.concat(Arrays.stream(cmdArray), Arrays.stream(otherParameter)).toArray(String[]::new);
-
-        String execId = dockerClient.execCreateCmd(containerId)
-                .withCmd(cmd)
-                .withAttachStderr(true)
-                .withAttachStdin(true)
-                .withAttachStdout(true)
-                .exec().getId();
-        //执行
-        ExecStartCmd execStartCmd = dockerClient.execStartCmd(execId);
-        execStartCmd.exec(new ExecStartResultCallback()).awaitCompletion();
-
-        //获取执行结果
-        int result = Integer.parseInt(Objects.requireNonNull(FileUtil.readAllFile(systemFile)));
-
-        return VerdictEnum.getEnumByValue(result);
+    public VerdictEnum compile() throws IOException, InterruptedException {
+        String outputDir = dirFile.getAbsolutePath();
+        //创建文件
+        File file = new File(outputDir + File.separator + ".Main.java");
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        String[] cmd = {"javac", file.getAbsolutePath()};
+        FileUtil.writeToFile(code, file);
+        // 执行命令
+        Runtime runtime = Runtime.getRuntime();
+        int w = runtime.exec(cmd).waitFor();
+        if (w != 0) {
+            return VerdictEnum.CompileError;
+        }
+        return VerdictEnum.Accepted;
     }
 
 }

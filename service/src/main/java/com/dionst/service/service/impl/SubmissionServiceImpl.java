@@ -1,25 +1,29 @@
 package com.dionst.service.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dionst.service.common.ErrorCode;
+import com.dionst.service.common.PageResult;
 import com.dionst.service.exception.BusinessException;
 import com.dionst.service.mapper.*;
 import com.dionst.service.model.dto.program.ProgramAddRequest;
 import com.dionst.service.model.dto.submission.SubmissionAddRequest;
-import com.dionst.service.model.entity.Contest;
-import com.dionst.service.model.entity.Program;
-import com.dionst.service.model.entity.Submission;
-import com.dionst.service.model.entity.UserRating;
+import com.dionst.service.model.dto.submission.SubmissionPageRequest;
+import com.dionst.service.model.entity.*;
 import com.dionst.service.model.enums.ProgramLanguageEnum;
 import com.dionst.service.model.enums.VerdictEnum;
+import com.dionst.service.model.vo.SubmissionVo;
 import com.dionst.service.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dionst.service.utils.UserHolder;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -44,15 +48,20 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
     @Autowired
     private IJudgeRequestService judgeRequestService;
 
+    @Autowired
+    private QuestionMapper questionMapper;
+
     @Override
     @Transactional
     public void add(SubmissionAddRequest submissionAddRequest) {
 
         LocalDateTime submitTime = LocalDateTime.now();
 
-        Long contestId = submissionAddRequest.getContestId();
-        Long questionIndex = submissionAddRequest.getQuestionIndex();
         ProgramAddRequest code = submissionAddRequest.getCode();
+        Question question = questionMapper.selectById(submissionAddRequest.getQuestionId());
+        Long contestId = question.getContestId();
+        Long questionIndex = question.getQuestionIndex();
+
         //查看当前用户是否参赛
         QueryWrapper<UserRating> userRatingQueryWrapper = new QueryWrapper<>();
         userRatingQueryWrapper.lambda()
@@ -64,8 +73,8 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
             throw new BusinessException(ErrorCode.NO_PARTICIPATION);
         }
         //检查代码编程语言是否支持
-        ProgramLanguageEnum enumByValue = ProgramLanguageEnum.getEnumByValue(code.getLanguage());
-        if (enumByValue == null) {
+        ProgramLanguageEnum language = ProgramLanguageEnum.getEnumByText(code.getLanguage());
+        if (language == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
@@ -82,7 +91,7 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
         //保存代码
         Program program = new Program();
         program.setCode(code.getCode());
-        program.setLanguage(code.getLanguage());
+        program.setLanguage(language.getValue());
         programMapper.insert(program);
 
         //保存提交
@@ -98,5 +107,25 @@ public class SubmissionServiceImpl extends ServiceImpl<SubmissionMapper, Submiss
 
         //发送判题请求
         judgeRequestService.sendJudgeRequest(submission.getId());
+    }
+
+    @Override
+    public PageResult pageSearch(SubmissionPageRequest submissionPageRequest) {
+
+        QueryWrapper<Submission> submissionQueryWrapper = new QueryWrapper<>();
+        submissionQueryWrapper.lambda()
+                .eq(Submission::getUserId, UserHolder.getUser().getId());
+
+        Page<Submission> page = page(new Page<>(submissionPageRequest.getCurrent(), submissionPageRequest.getPageSize()), submissionQueryWrapper);
+
+        List<SubmissionVo> records = new ArrayList<>();
+        for (Submission submission : page.getRecords()) {
+            SubmissionVo submissionVo = new SubmissionVo();
+            submissionVo.setVerdict(VerdictEnum.getEnumByValue(submission.getVerdict()).getText());
+            BeanUtils.copyProperties(submission, submissionVo);
+            records.add(submissionVo);
+        }
+
+        return new PageResult(page.getTotal(), records);
     }
 }

@@ -101,7 +101,9 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         boolean asc = contestPageRequest.isAsc();
 
         QueryWrapper<Contest> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().select(Contest::getId, Contest::getTitle, Contest::getDescription, Contest::getDuration);
+        queryWrapper.lambda().select(
+                Contest::getId, Contest::getTitle, Contest::getDescription, Contest::getDuration
+                , Contest::getStartTime);
         if (!StrUtil.isBlank(title)) {
             queryWrapper.lambda().like(Contest::getTitle, title);
         }
@@ -145,7 +147,9 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         String key = RedisConstant.RANKING + contestId;
         Boolean has = stringRedisTemplate.hasKey(key);
         if (!has) {
-            buildRanking(contestId);
+            new Thread(() -> {
+                buildRanking(contestId);
+            });
             return null;
         }
         List<String> result = new ArrayList<>();
@@ -167,7 +171,7 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
 
     void buildRanking(Long contestId) {
         String rankingKey = RedisConstant.RANKING + contestId;
-        //获取互斥锁，防止重复更新
+        //加非阻塞锁，防止重复更新
         String lockKey = RedisConstant.RANKING_LOCK + contestId;
         RLock lock = redissonClient.getLock(lockKey);
         if (!lock.tryLock()) {

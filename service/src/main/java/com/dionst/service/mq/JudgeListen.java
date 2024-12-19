@@ -26,6 +26,7 @@ public class JudgeListen {
             exchange = @Exchange(name = MQConstant.JUDGE_EXCHANGE, type = ExchangeTypes.FANOUT)
     ))
     public void listenContestSubmitQueue(Long submitId) throws IOException, InterruptedException {
+        log.info("开始判题：{}", submitId);
         judgeService.judge(submitId);
     }
 }

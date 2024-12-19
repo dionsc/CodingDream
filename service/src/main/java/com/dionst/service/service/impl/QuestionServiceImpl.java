@@ -59,7 +59,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         Long memoryLimit = questionAddRequest.getMemoryLimit();
         ProgramAddRequest judgeProgram = questionAddRequest.getJudgeProgram();
 
-        Integer language = judgeProgram.getLanguage();
+        String language = judgeProgram.getLanguage();
         String code = judgeProgram.getCode();
 
         //查看比赛是否存在
@@ -68,8 +68,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         //查看比赛是否距离比赛开始时间过近
-        if (contest.getStartTime().isBefore(LocalDateTime.now().plusHours(ContestConstant.UPDATE_BEFORE_START)))
-        {
+        if (contest.getStartTime().isBefore(LocalDateTime.now().plusHours(ContestConstant.UPDATE_BEFORE_START))) {
             throw new BusinessException(ErrorCode.UPDATE_CLOSE_TO_START_TIME);
         }
         //检查时间限制是否在设置范围内
@@ -79,8 +78,8 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         if (memoryLimit == null || memoryLimit <= 0 || memoryLimit > QuestionConstant.MAX_MEMORY_LIMIT)
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         //检查编程判题程序编程语言是否存在
-        ProgramLanguageEnum enumByValue = ProgramLanguageEnum.getEnumByValue(language);
-        if (null == enumByValue){
+        ProgramLanguageEnum enumByValue = ProgramLanguageEnum.getEnumByText(language);
+        if (null == enumByValue) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
 
@@ -126,15 +125,11 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
     }
 
 
-
     @Override
-    public QuestionVo getQuestion(Long contestId,Long questionIndex) {
-        checkContestStart(contestId);
-        QueryWrapper<Question> questionQueryWrapper = new QueryWrapper<>();
-        questionQueryWrapper.lambda()
-                .eq(Question::getContestId, contestId)
-                .eq(Question::getQuestionIndex, questionIndex);
-        Question question = getOne(questionQueryWrapper);
+    public QuestionVo getQuestion(Long questionId) {
+
+        Question question = getById(questionId);
+        checkContestStart(question.getContestId());
         QuestionVo questionVo = new QuestionVo();
         BeanUtils.copyProperties(question, questionVo);
         return questionVo;

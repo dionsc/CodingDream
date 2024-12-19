@@ -46,9 +46,9 @@ public class QuestionController {
     }
 
     @ApiOperation("查看题目详情")
-    @PostMapping("/get/{contestId}/{questionIndex}")
-    public Result<QuestionVo> getQuestion(@PathVariable Long contestId, @PathVariable Long questionIndex) {
-        QuestionVo result = questionService.getQuestion(contestId,questionIndex);
+    @PostMapping("/get/{questionId}")
+    public Result<QuestionVo> getQuestion(@PathVariable Long questionId) {
+        QuestionVo result = questionService.getQuestion(questionId);
         return Result.ok(result);
     }
 }

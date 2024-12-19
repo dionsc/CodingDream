@@ -36,37 +36,47 @@ public class JudgeRequestServiceImpl extends ServiceImpl<JudgeRequestMapper, Jud
     public void sendJudgeRequest(Long submissionId) {
         JudgeRequest judgeRequest = new JudgeRequest().setSubmissionId(submissionId);
         save(judgeRequest);
+        new Thread(() -> {
+            sendToMQ(judgeRequest.getId());
+        }).start();
+    }
+
+
+    private void sendToMQ(Long id) {
+        JudgeRequest judgeRequest = getById(id);
         UpdateWrapper<JudgeRequest> judgeRequestUpdateWrapper = new UpdateWrapper<>();
         judgeRequestUpdateWrapper.lambda()
-                .set(JudgeRequest::getUpdated,true)
-                .eq(JudgeRequest::getSubmissionId,submissionId);
+                .set(JudgeRequest::getUpdated, true)
+                .eq(JudgeRequest::getId, id);
         CorrelationData cd = new CorrelationData();
-        cd.getFuture().addCallback(new ListenableFutureCallback<CorrelationData.Confirm>(){
+        cd.getFuture().addCallback(new ListenableFutureCallback<CorrelationData.Confirm>() {
             @Override
             public void onSuccess(CorrelationData.Confirm result) {
-                update(judgeRequestUpdateWrapper);
+                if (result.isAck())
+                    update(judgeRequestUpdateWrapper);
             }
+
             @Override
             public void onFailure(Throwable ex) {
 
             }
         });
-        rabbitTemplate.convertAndSend(MQConstant.JUDGE_EXCHANGE,"", judgeRequest,cd);
+        rabbitTemplate.convertAndSend(MQConstant.JUDGE_EXCHANGE, "", judgeRequest.getSubmissionId(), cd);
     }
 
     /**
      * 定时任务检查没有发送成功的，重新发送
      */
-    @Scheduled(cron = "0 0/5 * * * ?")
+    @Scheduled(cron = "0 0/1 * * * ?")
     public void checkSendFail() {
         QueryWrapper<JudgeRequest> judgeRequestQueryWrapper = new QueryWrapper<>();
         judgeRequestQueryWrapper.lambda()
-                .select(JudgeRequest::getSubmissionId)
-                .eq(JudgeRequest::getUpdated,false);
+                .select(JudgeRequest::getId)
+                .eq(JudgeRequest::getUpdated, false);
         //重新发送
         List<JudgeRequest> list = list(judgeRequestQueryWrapper);
         for (JudgeRequest judgeRequest : list) {
-            sendJudgeRequest(judgeRequest.getSubmissionId());
+            sendToMQ(judgeRequest.getId());
         }
     }
 }

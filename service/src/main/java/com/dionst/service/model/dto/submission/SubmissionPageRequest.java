@@ -1,8 +1,6 @@
 package com.dionst.service.model.dto.submission;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.dionst.service.model.dto.program.ProgramAddRequest;
-import com.dionst.service.model.entity.Program;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -21,15 +19,22 @@ import java.time.LocalDateTime;
  * @since 2024-12-13
  */
 @Data
-public class SubmissionAddRequest implements Serializable {
+public class SubmissionPageRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    /**
+     * 当前页号
+     */
+    private int current = 1;
+
+    /**
+     * 页面大小
+     */
+    private int pageSize = 10;
 
 
-    @ApiModelProperty(value = "题目编号")
-    private Long questionId;
-
-    @ApiModelProperty(value = "提交的代码")
-    private ProgramAddRequest code;
-
+    /**
+     * 状态
+     */
+    private String verdict;
 }

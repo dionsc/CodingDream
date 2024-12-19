@@ -35,9 +35,10 @@ public interface IQuestionService extends IService<Question> {
 
     /**
      * 查看题目详情
-     * @param contestId
-     * @param questionIndex
+     *
+     * @param questionId
      * @return
      */
-    QuestionVo getQuestion(Long contestId, Long questionIndex);
+    QuestionVo getQuestion(Long questionId);
+
 }

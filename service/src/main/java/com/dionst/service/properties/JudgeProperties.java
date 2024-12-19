@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 public class JudgeProperties {
 
     //沙箱镜像
-    private  String sandboxImage;
-    
+    private String sandboxImage;
+
     //容器内存大小(单位：MB)
-    private  Long containerMemory;
+    private Long containerMemory;
 }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="ad3d90c7-69f0-4319-a93b-52f603a30e29" name="HWubuntu">
+        <fileTransfer rootFolder="/root/project/CodingDream" accessType="SFTP" host="116.205.122.144" port="22" sshConfigId="1fae3033-bf24-4f4e-a987-8fa60e0cd9f0" sshConfig="root@116.205.122.144:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

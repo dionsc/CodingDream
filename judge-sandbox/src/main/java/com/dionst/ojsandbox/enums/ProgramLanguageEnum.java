@@ -1,6 +1,4 @@
-package com.dionst.service.model.enums;
-
-import lombok.Getter;
+package com.dionst.ojsandbox.enums;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,11 +6,11 @@ import java.util.stream.Collectors;
 
 /**
  * 用户角色枚举
+ *
  */
-@Getter
 public enum ProgramLanguageEnum {
 
-    JAVA("java", 1),
+    JAVA("Java", 1),
     CPP("cpp", 2);
 
     private final String text;
@@ -39,16 +37,20 @@ public enum ProgramLanguageEnum {
      * @param text
      * @return
      */
-    public static ProgramLanguageEnum getEnumByText(String text) {
+    public static Integer getEnumByText(String text) {
         if (text == null || text.isEmpty()) {
             return null;
         }
         for (ProgramLanguageEnum anEnum : ProgramLanguageEnum.values()) {
             if (anEnum.text.equals(text)) {
-                return anEnum;
+                return anEnum.getValue();
             }
         }
         return null;
+    }
+
+    private Integer getValue() {
+        return value;
     }
 
     public static ProgramLanguageEnum getEnumByValue(Integer value) {

@@ -1,15 +1,19 @@
 package com.dionst.service.judge.run;
 
+import com.dionst.service.model.enums.VerdictEnum;
 import com.dionst.service.utils.DockerUtil;
 import com.dionst.service.utils.FileUtil;
 import com.dionst.service.properties.JudgeProperties;
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.ExecStartCmd;
+import com.github.dockerjava.core.command.ExecStartResultCallback;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Stream;
 
 
 @Data
@@ -24,12 +28,14 @@ public abstract class Runner implements RunnerStrategy {
     private File userOutputFile;
     private File inputFile;
     private File systemFile;
-    private File dirFile;
+    protected File dirFile;
     private DockerClient dockerClient;
     private String containerId;
     private String workDir;
+    public String code;
 
-    public Runner() throws IOException {
+    public Runner(String code) throws IOException, InterruptedException {
+        this.code = code;
         uniqueMark = UUID.randomUUID().toString();
         //工作目录
         workDir = "." + File.separator + uniqueMark;
@@ -56,5 +62,47 @@ public abstract class Runner implements RunnerStrategy {
         dockerClient = DockerUtil.dockerConnect();
         //创建容器
         containerId = DockerUtil.createContainer(dockerClient, judgeProperties, workDir);
+
+        /**
+         * 编译代码
+         */
+        VerdictEnum compile = compile();
+        if (!VerdictEnum.Accepted.equals(compile)) {
+            throw new RuntimeException(VerdictEnum.CompileError.getText());
+        }
+
+    }
+
+    public VerdictEnum run(Long timeLimit, Long memoryLimit, String... otherParameter) throws IOException, InterruptedException {
+
+
+        File systemFile = this.getSystemFile();
+        File dirFile = this.getDirFile();
+
+
+        DockerClient dockerClient = this.getDockerClient();
+        String containerId = this.getContainerId();
+
+        //创建沙箱中的执行命令
+        String[] cmdArray = {"java", "-jar", "/app/judge-sandbox-1.0-SNAPSHOT.jar",
+                String.valueOf(timeLimit),
+                String.valueOf(memoryLimit)};
+
+        String[] cmd = Stream.concat(Arrays.stream(cmdArray), Arrays.stream(otherParameter)).toArray(String[]::new);
+
+        String execId = dockerClient.execCreateCmd(containerId)
+                .withCmd(cmd)
+                .withAttachStderr(true)
+                .withAttachStdin(true)
+                .withAttachStdout(true)
+                .exec().getId();
+        //执行
+        ExecStartCmd execStartCmd = dockerClient.execStartCmd(execId);
+        execStartCmd.exec(new ExecStartResultCallback()).awaitCompletion();
+
+        //获取执行结果
+        int result = Integer.parseInt(Objects.requireNonNull(FileUtil.readAllFile(systemFile)));
+
+        return VerdictEnum.getEnumByValue(result);
     }
 }

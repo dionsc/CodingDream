@@ -6,8 +6,5 @@ import java.io.IOException;
 
 public interface RunnerStrategy {
 
-    VerdictEnum run(String code,
-                    Long timeLimit,
-                    Long memoryLimit,
-                    String... otherParameter) throws IOException, InterruptedException;
+    VerdictEnum compile() throws IOException, InterruptedException;
 }

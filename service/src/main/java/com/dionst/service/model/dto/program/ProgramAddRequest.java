@@ -24,7 +24,7 @@ public class ProgramAddRequest implements Serializable {
 
 
     @ApiModelProperty(value = "编程语言 枚举：1->java 2->cpp")
-    private Integer language;
+    private String language;
 
     @ApiModelProperty(value = "代码")
     private String code;

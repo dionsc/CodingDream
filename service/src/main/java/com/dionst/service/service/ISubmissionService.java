@@ -1,6 +1,8 @@
 package com.dionst.service.service;
 
+import com.dionst.service.common.PageResult;
 import com.dionst.service.model.dto.submission.SubmissionAddRequest;
+import com.dionst.service.model.dto.submission.SubmissionPageRequest;
 import com.dionst.service.model.entity.Submission;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -19,4 +21,12 @@ public interface ISubmissionService extends IService<Submission> {
      * @param submissionAddRequest
      */
     void add(SubmissionAddRequest submissionAddRequest);
+
+    /**
+     * 查看提交
+     *
+     * @param submissionPageRequest
+     * @return
+     */
+    PageResult pageSearch(SubmissionPageRequest submissionPageRequest);
 }

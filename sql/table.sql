@@ -81,7 +81,8 @@ create table if not exists judge_data
     id          bigint auto_increment comment 'id' primary key,
     name        varchar(256)                       not null comment '数据名称',
     question_id bigint                             not null comment '数据对应题目',
-    data        mediumtext                         not null comment '数据部分',
+    input       mediumtext                         not null comment '输入数据',
+    output      mediumtext                         not null comment '输出数据',
 
     create_time datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     update_time datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
