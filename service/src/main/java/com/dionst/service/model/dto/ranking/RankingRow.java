@@ -7,6 +7,7 @@ import java.util.List;
 
 @Data
 public class RankingRow {
+    long rank;
     long penalty;
     long accepted;
     String userName;

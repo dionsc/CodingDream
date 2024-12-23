@@ -8,23 +8,19 @@ import com.dionst.service.common.PageResult;
 import com.dionst.service.constant.ContestConstant;
 import com.dionst.service.constant.RedisConstant;
 import com.dionst.service.exception.BusinessException;
-import com.dionst.service.mapper.QuestionMapper;
-import com.dionst.service.mapper.SubmissionMapper;
-import com.dionst.service.mapper.UserRatingMapper;
+import com.dionst.service.mapper.*;
+import com.dionst.service.model.dto.ranking.RankingPageRequest;
 import com.dionst.service.model.dto.ranking.RankingRow;
 import com.dionst.service.model.dto.contest.ContestAddRequest;
 import com.dionst.service.model.dto.contest.ContestPageRequest;
 import com.dionst.service.model.dto.ranking.SubmissionDetails;
 import com.dionst.service.model.entity.*;
-import com.dionst.service.mapper.ContestMapper;
 import com.dionst.service.model.enums.VerdictEnum;
 import com.dionst.service.service.IContestService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.dionst.service.service.IQuestionService;
-import com.dionst.service.service.ISubmissionService;
-import com.dionst.service.service.IUserRatingService;
 import com.dionst.service.utils.UserHolder;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +31,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -65,6 +62,9 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
 
     @Autowired
     private QuestionMapper questionMapper;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     public long addContest(ContestAddRequest contestAddRequest) {
@@ -143,7 +143,10 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
     }
 
     @Override
-    public List<String> getRanking(Long contestId) {
+    public PageResult getRanking(RankingPageRequest rankingPageRequest) {
+
+        Long contestId = rankingPageRequest.getContestId();
+
         String key = RedisConstant.RANKING + contestId;
         Boolean has = stringRedisTemplate.hasKey(key);
         if (!has) {
@@ -152,21 +155,42 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
             });
             return null;
         }
-        List<String> result = new ArrayList<>();
-        Set<String> userIdSet = stringRedisTemplate.opsForZSet().reverseRange(key, 0, -1);
+
+        long total = stringRedisTemplate.opsForZSet().size(key);
+
+        long l = rankingPageRequest.getPageSize() * (rankingPageRequest.getCurrent() - 1);
+        long r = l + rankingPageRequest.getPageSize() - 1;
+        l = Math.min(l, total);
+        r = Math.min(r, total);
+
+        List<RankingRow> result = new ArrayList<>();
+        Set<String> userIdSet = stringRedisTemplate.opsForZSet().reverseRange(key, l, r);
         if (userIdSet == null || userIdSet.isEmpty()) {
             return null;
         }
+        long ranking = l + 1;
         for (String userIdString : userIdSet) {
             long userId = Long.parseLong(userIdString);
-            String rankingRowKey = RedisConstant.RANKING + contestId + ":" + userId;
+            String rankingRowKey = RedisConstant.RANKING_ROW + contestId + ":" + userId;
             if (!stringRedisTemplate.hasKey(rankingRowKey)) {
                 updateRanking(contestId, userId);
             }
-            String json = stringRedisTemplate.opsForValue().get(rankingRowKey);
-            result.add(json);
+            //String json = stringRedisTemplate.opsForValue().get(rankingRowKey);
+            RankingRow row = new RankingRow();
+            row.setRank(ranking++);
+            row.setPenalty(Long.parseLong((String) Objects.requireNonNull(stringRedisTemplate.opsForHash().get(rankingRowKey, "penalty"))));
+            row.setAccepted(Long.parseLong((String) Objects.requireNonNull(stringRedisTemplate.opsForHash().get(rankingRowKey, "accepted"))));
+            row.setUserName((String) Objects.requireNonNull(stringRedisTemplate.opsForHash().get(rankingRowKey, "userName")));
+//            row.setSubmissionDetails(
+//                    gson.fromJson(
+//                            (String) Objects.requireNonNull(stringRedisTemplate.opsForHash().get(rankingRowKey, "userName")),
+//                            new TypeToken<List<SubmissionDetails>>() {
+//                            }.getType())
+//            );
+
+            result.add(row);
         }
-        return result;
+        return new PageResult(total, result);
     }
 
     void buildRanking(Long contestId) {
@@ -234,9 +258,14 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
             rankingRow.setAccepted(accepted);
             rankingRow.setPenalty(penalty);
             rankingRow.setSubmissionDetails(submissionDetailsList);
+            rankingRow.setUserName(userMapper.selectById(userId).getNickname());
             double score = accepted + 1.0 / (penalty + 1);
             String rankingRowKey = RedisConstant.RANKING_ROW + contestId + ":" + userId;
-            stringRedisTemplate.opsForValue().set(rankingRowKey, gson.toJson(rankingRow));
+//            stringRedisTemplate.opsForValue().set(rankingRowKey, gson.toJson(rankingRow));
+            stringRedisTemplate.opsForHash().put(rankingRowKey, "penalty", String.valueOf(rankingRow.getPenalty()));
+            stringRedisTemplate.opsForHash().put(rankingRowKey, "accepted", String.valueOf(rankingRow.getAccepted()));
+            stringRedisTemplate.opsForHash().put(rankingRowKey, "submissionDetails", gson.toJson(rankingRow.getSubmissionDetails()));
+            stringRedisTemplate.opsForHash().put(rankingRowKey, "userName", String.valueOf(rankingRow.getUserName()));
             stringRedisTemplate.opsForZSet().add(rankingKey, userId.toString(), score);
         }
         lock.unlock();
@@ -303,8 +332,13 @@ public class ContestServiceImpl extends ServiceImpl<ContestMapper, Contest> impl
         rankingRow.setAccepted(accepted);
         rankingRow.setPenalty(penalty);
         rankingRow.setSubmissionDetails(submissionDetailsList);
+        rankingRow.setUserName(userMapper.selectById(userId).getNickname());
         double score = accepted + 1.0 / (penalty + 1);
-        stringRedisTemplate.opsForValue().set(rankingRowKey, gson.toJson(rankingRow));
+        //stringRedisTemplate.opsForValue().set(rankingRowKey, gson.toJson(rankingRow));
+        stringRedisTemplate.opsForHash().put(rankingRowKey, "penalty", String.valueOf(rankingRow.getPenalty()));
+        stringRedisTemplate.opsForHash().put(rankingRowKey, "accepted", String.valueOf(rankingRow.getAccepted()));
+        stringRedisTemplate.opsForHash().put(rankingRowKey, "submissionDetails", gson.toJson(rankingRow.getSubmissionDetails()));
+        stringRedisTemplate.opsForHash().put(rankingRowKey, "userName", String.valueOf(rankingRow.getUserName()));
         //更新榜单行信息
         stringRedisTemplate.opsForZSet().remove(rankingKey, userId.toString());
         //更新榜单

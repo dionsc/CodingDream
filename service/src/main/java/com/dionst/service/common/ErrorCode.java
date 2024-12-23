@@ -46,7 +46,11 @@ public enum ErrorCode {
     NO_PARTICIPATION
             (50013, "未参赛"),
     NO_LANGUAGE
-            (50014,"没有次编程语言" );
+            (50014, "没有次编程语言"),
+    FREQUENT_SUBMIT
+            (50015, "频繁提交"),
+    CONTEST_IS_RUNNING
+            (50016, "比赛正在进行");
 
     /**
      * 状态码

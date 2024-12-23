@@ -67,7 +67,7 @@ public class JudgeRequestServiceImpl extends ServiceImpl<JudgeRequestMapper, Jud
     /**
      * 定时任务检查没有发送成功的，重新发送
      */
-    @Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0 0/5 * * * ?")
     public void checkSendFail() {
         QueryWrapper<JudgeRequest> judgeRequestQueryWrapper = new QueryWrapper<>();
         judgeRequestQueryWrapper.lambda()

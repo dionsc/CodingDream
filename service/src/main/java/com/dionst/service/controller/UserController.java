@@ -7,6 +7,8 @@ import com.dionst.service.common.Result;
 import com.dionst.service.constant.UserConstant;
 import com.dionst.service.model.dto.LoginFormDTO;
 import com.dionst.service.model.entity.*;
+import com.dionst.service.model.enums.UserRoleEnum;
+import com.dionst.service.model.vo.UserVo;
 import com.dionst.service.service.IUserService;
 import com.dionst.service.utils.UserHolder;
 import io.swagger.annotations.ApiOperation;
@@ -48,42 +50,12 @@ public class UserController {
     @ApiOperation("获取登录用户信息")
     @PostMapping("/get/login")
     @AuthCheck(mustRole = UserConstant.DEFAULT)
-    public Result<User> getLoginUser() {
+    public Result<UserVo> getLoginUser() {
         User user = UserHolder.getUser();
-        User result = new User();
+        UserVo result = new UserVo();
         result.setId(user.getId());
-        result.setUserRole(user.getUserRole());
+        result.setUserRole(UserRoleEnum.getEnumByValue(user.getUserRole()).getText());
         result.setNickname(user.getNickname());
         return Result.ok(result);
     }
-
-
-    @PostMapping("/1")
-    public String test1(@RequestBody Contest contest){
-        return "ok";
-    }
-    @PostMapping("/2")
-    public String test2(@RequestBody JudgeData contest){
-        return "ok";
-    }
-    @PostMapping("/3")
-    public String test1(@RequestBody Question contest){
-        return "ok";
-    }
-    @PostMapping("/4")
-    public String test4(@RequestBody Submission contest){
-        return "ok";
-    }
-    @PostMapping("/5")
-    public String test5(@RequestBody UserRating contest){
-        return "ok";
-    }
-
-
-
-
-
-
-
-
 }

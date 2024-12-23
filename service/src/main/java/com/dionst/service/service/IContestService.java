@@ -3,10 +3,9 @@ package com.dionst.service.service;
 import com.dionst.service.common.PageResult;
 import com.dionst.service.model.dto.contest.ContestAddRequest;
 import com.dionst.service.model.dto.contest.ContestPageRequest;
+import com.dionst.service.model.dto.ranking.RankingPageRequest;
 import com.dionst.service.model.entity.Contest;
 import com.baomidou.mybatisplus.extension.service.IService;
-
-import java.util.List;
 
 /**
  * <p>
@@ -42,10 +41,10 @@ public interface IContestService extends IService<Contest> {
     /**
      * 获取榜单
      *
-     * @param contestId
+     * @param rankingPageRequest
      * @return
      */
-    List<String> getRanking(Long contestId);
+    PageResult getRanking(RankingPageRequest rankingPageRequest);
 
     /**
      * 更新榜单

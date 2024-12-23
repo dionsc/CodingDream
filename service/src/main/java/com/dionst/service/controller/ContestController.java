@@ -7,11 +7,16 @@ import com.dionst.service.common.Result;
 import com.dionst.service.constant.UserConstant;
 import com.dionst.service.model.dto.contest.ContestAddRequest;
 import com.dionst.service.model.dto.contest.ContestPageRequest;
+import com.dionst.service.model.dto.contest.SendMessageRequest;
+import com.dionst.service.model.dto.ranking.RankingPageRequest;
 import com.dionst.service.model.entity.Contest;
 import com.dionst.service.service.IContestService;
 import com.dionst.service.service.IUserRatingService;
+import com.dionst.service.utils.CommonUtils;
+import com.google.gson.Gson;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +37,12 @@ public class ContestController {
 
     @Autowired
     private IContestService contestService;
+
+    @Autowired
+    private Gson gson;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
 
     @ApiOperation("添加比赛")
@@ -58,9 +69,17 @@ public class ContestController {
     }
 
     @ApiOperation("获取比赛榜单")
-    @PostMapping("/ranking/{contestId}")
-    public Result<List<String>> getRanking(@PathVariable Long contestId) {
-        List<String> result = contestService.getRanking(contestId);
+    @PostMapping("/ranking")
+    public Result<PageResult> getRanking(@RequestBody RankingPageRequest rankingPageRequest) {
+        PageResult result = contestService.getRanking(rankingPageRequest);
         return Result.ok(result);
+    }
+
+    @ApiOperation("管理员向前端广播消息")
+    @PostMapping("/send-message")
+    @AuthCheck(mustRole = UserConstant.ADMIN)
+    public Result<String> sendMessageToUser(@RequestBody SendMessageRequest sendMessageRequest) {
+        CommonUtils.sendMessageToFrontend(gson.toJson(sendMessageRequest), rabbitTemplate);
+        return Result.ok();
     }
 }

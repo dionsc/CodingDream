@@ -1,9 +1,9 @@
 package com.dionst.service.service;
 
+import com.dionst.service.common.PageResult;
+import com.dionst.service.model.dto.rating.UserRatingPageRequest;
 import com.dionst.service.model.entity.UserRating;
 import com.baomidou.mybatisplus.extension.service.IService;
-
-import java.util.List;
 
 /**
  * <p>
@@ -17,10 +17,11 @@ public interface IUserRatingService extends IService<UserRating> {
 
     /**
      * 获取用户的Rating变化
-     * @param userId
+     *
+     * @param userRatingPageRequest
      * @return
      */
-    List<UserRating> getUserRatingByUserId(Long userId);
+    PageResult getUserRatingByUserId(UserRatingPageRequest userRatingPageRequest);
 
     /**
      * 查看用户累计积分
@@ -28,4 +29,10 @@ public interface IUserRatingService extends IService<UserRating> {
      * @return
      */
     Integer getUserRatingCountByUserId(Long userId);
+
+    /**
+     * 计算所有参赛用户的rating变化
+     * @param contestId
+     */
+    void calculateContestRating(Long contestId);
 }

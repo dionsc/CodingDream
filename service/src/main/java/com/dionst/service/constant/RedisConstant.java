@@ -8,4 +8,6 @@ public interface RedisConstant {
     String RANKING = "ranking:";
     String RANKING_LOCK = "ranking_lock:";
     String RANKING_ROW = "ranking_row:";
+    String SUBMIT_CHECK = "submit_check:";
+    int SUBMIT_LIMIT = 1;
 }

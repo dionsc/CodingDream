@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 /**
  * 用户角色枚举
- *
  */
 @Getter
 public enum UserRoleEnum {
@@ -57,4 +56,15 @@ public enum UserRoleEnum {
         return null;
     }
 
+    public static UserRoleEnum getEnumByValue(Integer userRole) {
+        if (userRole == null) {
+            return null;
+        }
+        for (UserRoleEnum anEnum : UserRoleEnum.values()) {
+            if (userRole == anEnum.getValue()) {
+                return anEnum;
+            }
+        }
+        return null;
+    }
 }
